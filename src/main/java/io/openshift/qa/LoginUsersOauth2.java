@@ -65,6 +65,7 @@ public class LoginUsersOauth2 {
       private static final long TIMEOUT = 60;
 
       private static final long maxUsers = Long.valueOf(System.getProperty("max.users", "-1"));
+      private static final boolean returnUserNames = Boolean.valueOf(System.getProperty("returnUserNames"));
 
       public static void main(String[] args) throws Exception {
             HashMap<MetricAuth, LinkedList<Long>> metricMap = new HashMap<>();
@@ -163,9 +164,16 @@ public class LoginUsersOauth2 {
                   String responseString = EntityUtils.toString(response.getEntity(), "UTF-8");
                   final long getToken = _stop();
                   final JSONObject json = new JSONObject(responseString);
+                  if(returnUserNames)
                   synchronized (tokens) {
                         tokens.append(json.getString("access_token")).append(";")
-                                    .append(json.getString("refresh_token")).append("\n");
+                                    .append(json.getString("refresh_token")).append(";")
+                                    .append(user.getKey()).append("\n");
+                  }
+                  else
+                        synchronized (tokens) {
+                        tokens.append(json.getString("access_token")).append(";")
+                                .append(json.getString("refresh_token")).append("\n");
                   }
                   log.info(uName + "-" + MetricAuth.GetToken.logName() + ":" + getToken + "ms");
                   final long login = getCode + getToken;

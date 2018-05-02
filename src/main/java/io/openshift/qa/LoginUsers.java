@@ -57,8 +57,10 @@ public class LoginUsers {
       private static final long TIMEOUT = 60;
 
       private static final long maxUsers = Long.valueOf(System.getProperty("max.users", "-1"));
+      private static final boolean returnUserNames = Boolean.valueOf(System.getProperty("returnUserNames"));
 
       public static void main(String[] args) throws Exception {
+            System.out.println("Gotten returnUserNames: " + returnUserNames);
             HashMap<Metric, LinkedList<Long>> metricMap = new HashMap<>();
             for (Metric m : Metric.values()) {
                   metricMap.put(m, new LinkedList<>());
@@ -116,10 +118,17 @@ public class LoginUsers {
                         }
                   }
                   final JSONObject json = new JSONObject(tokenJson);
-                  synchronized (tokens) {
-                        tokens.append(json.getString("access_token")).append(";")
-                                    .append(json.getString("refresh_token")).append("\n");
-                  }
+                  if(returnUserNames)
+                        synchronized (tokens){
+                            tokens.append(json.getString("access_token")).append(";")
+                                  .append(json.getString("refresh_token")).append(";")
+                                  .append(user.getKey()).append("\n");
+                        }
+                  else
+                        synchronized (tokens) {
+                            tokens.append(json.getString("access_token")).append(";")
+                                        .append(json.getString("refresh_token")).append("\n");
+                        }
                   metricMap.get(Metric.OpenLoginPage).add(openLoginPage);
                   metricMap.get(Metric.Login).add(login);
                   users += 1;
